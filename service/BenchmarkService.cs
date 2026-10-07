@@ -12,12 +12,15 @@ public class BenchmarkService
     private readonly IniService _iniService;
     private readonly BenchmarkParser _parser;
 
+    private readonly GameAutomationService _gameAutomationService;
+
     public BenchmarkService(AppConfig config)
     {
         _config = config;
 
         _iniService = new IniService();
         _parser = new BenchmarkParser();
+        _gameAutomationService = new GameAutomationService();
     }
 
     public async Task<BenchmarkRunResult> RunAsync(
@@ -50,6 +53,8 @@ public class BenchmarkService
             Arguments = $"-applaunch {_config.SteamAppId}",
             UseShellExecute = true
         });
+
+        await _gameAutomationService.StartBenchmarkAsync(cancellationToken);
 
         Stopwatch timer = Stopwatch.StartNew();
 

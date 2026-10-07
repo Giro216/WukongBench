@@ -12,6 +12,7 @@ namespace WukongBench;
 public partial class MainWindow : Window
 {
     private readonly BenchmarkService _benchmarkService;
+    private readonly GameAutomationService _gameAutomationService;
     private readonly ReportService _reportService;
     private readonly AppConfig _config;
 
@@ -20,6 +21,8 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        _gameAutomationService = new GameAutomationService();
 
         string configPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
 
