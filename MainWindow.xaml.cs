@@ -59,7 +59,7 @@ public partial class MainWindow : Window
 
             SaveBackup(originalIni);
 
-            ProcessUtils.KillGameProcesses(GameDirectory);
+            ProcessUtils.KillGameProcesses();
 
             BenchmarkRunResult cpuRun =
                 await _benchmarkService.RunAsync(
@@ -102,7 +102,7 @@ public partial class MainWindow : Window
         }
         finally
         {
-            ProcessUtils.KillGameProcesses(GameDirectory);
+            ProcessUtils.KillGameProcesses();
 
             if (originalIni != null)
             {

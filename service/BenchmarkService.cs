@@ -41,9 +41,8 @@ public class BenchmarkService
     {
         Directory.CreateDirectory(_historyDirectory);
 
-        var oldFiles =
-            new HashSet<string>(
-                Directory.GetFiles(_historyDirectory));
+        var oldFiles = new HashSet<string>(
+            Directory.GetFiles(_historyDirectory));
 
         statusCallback?.Invoke(
             $"{testName}: применяю настройки");
@@ -88,22 +87,33 @@ public class BenchmarkService
                 FindNewResultFile(oldFiles);
 
             if (resultFile == null)
+            {
                 continue;
+            }
 
-            string json = File.ReadAllText(resultFile);
 
             try
             {
+                string json = File.ReadAllText(resultFile);
+
                 var result =
                     _parser.Parse(json, testName);
 
                 var system =
                     _parser.ParseSystemInfo(json);
 
-                ProcessUtils.KillGameProcesses(_gameDirectory);
+
+                statusCallback?.Invoke(
+                    $"{testName}: готово");
 
                 await Task.Delay(
                     TimeSpan.FromSeconds(2),
+                    cancellationToken);
+
+                ProcessUtils.KillGameProcesses();
+
+                await Task.Delay(
+                    TimeSpan.FromSeconds(2.5),
                     cancellationToken);
 
                 return new BenchmarkRunResult
@@ -112,9 +122,15 @@ public class BenchmarkService
                     System = system
                 };
             }
-            catch (System.Text.Json.JsonException)
+            catch (System.Text.Json.JsonException ex)
             {
-                // Файл ещё записывается benchmark'ом.
+                Debug.WriteLine(
+                    $"[JSON] JSON ещё не готов: {ex.Message}");
+            }
+            catch (IOException ex)
+            {
+                Debug.WriteLine(
+                    $"[IO] Файл ещё занят: {ex.Message}");
             }
         }
     }

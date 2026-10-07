@@ -4,27 +4,45 @@ namespace WukongBench.util;
 
 public static class ProcessUtils
 {
-    public static void KillGameProcesses(
-        string gameDirectory)
+    public static void KillGameProcesses()
     {
-        foreach (Process process in Process.GetProcesses())
+        KillProcess("b1_benchmark");
+        KillProcess("b1-Win64-Shipping");
+    }
+
+    private static void KillProcess(string processName)
+    {
+        Process[] processes =
+            Process.GetProcessesByName(processName);
+
+        foreach (Process process in processes)
         {
             try
             {
-                string? path =
-                    process.MainModule?.FileName;
+                Console.WriteLine(
+                    $"Найден процесс: {process.ProcessName}, PID={process.Id}");
 
-                if (path != null &&
-                    path.StartsWith(
-                        gameDirectory,
-                        StringComparison.OrdinalIgnoreCase))
+                if (!process.HasExited)
                 {
                     process.Kill(true);
+
+                    Console.WriteLine(
+                        $"Kill вызван: PID={process.Id}");
+
+                    process.WaitForExit(5000);
+
+                    Console.WriteLine(
+                        $"Процесс завершён: PID={process.Id}");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Процесс мог уже завершиться или не иметь доступа к MainModule
+                Console.WriteLine(
+                    $"Ошибка завершения {processName}: {ex.Message}");
+            }
+            finally
+            {
+                process.Dispose();
             }
         }
     }
