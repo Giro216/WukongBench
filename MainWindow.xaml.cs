@@ -1,4 +1,6 @@
 using System.IO;
+using System.Text.Json;
+using WukongBench.config;
 using System.Windows;
 using WukongBench.model;
 using WukongBench.profile;
@@ -9,21 +11,9 @@ namespace WukongBench;
 
 public partial class MainWindow : Window
 {
-    private static readonly string GameDirectory =
-        @"D:\SteamLibrary\steamapps\common\Black Myth Wukong Benchmark Tool";
-
-    private static readonly string IniPath =
-        Path.Combine(
-            GameDirectory,
-            @"b1\Saved\Config\Windows\GameUserSettings.ini");
-
-    private static readonly string HistoryDirectory =
-        Path.Combine(
-            Path.GetTempPath(),
-            @"b1\BenchMarkHistory\Tool");
-
     private readonly BenchmarkService _benchmarkService;
     private readonly ReportService _reportService;
+    private readonly AppConfig _config;
 
     private CancellationTokenSource? _cts;
 
@@ -31,10 +21,26 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        string configPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+
+        if (!File.Exists(configPath))
+        {
+            MessageBox.Show(
+                $"Не найден файл конфигурации:\n{configPath}");
+
+            Close();
+            return;
+        }
+
+        _config =
+            JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(configPath))
+            ?? throw new InvalidOperationException(
+                "Не удалось загрузить appsettings.json.");
+
         _benchmarkService = new BenchmarkService(
-            GameDirectory,
-            IniPath,
-            HistoryDirectory);
+            _config.GameDirectory,
+            _config.IniPath,
+            _config.HistoryDirectory);
 
         _reportService = new ReportService();
     }
@@ -55,7 +61,7 @@ public partial class MainWindow : Window
         {
             ValidateFiles();
 
-            originalIni = File.ReadAllText(IniPath);
+            originalIni = File.ReadAllText(_config.IniPath);
 
             SaveBackup(originalIni);
 
@@ -107,7 +113,7 @@ public partial class MainWindow : Window
             if (originalIni != null)
             {
                 File.WriteAllText(
-                    IniPath,
+                    _config.IniPath,
                     originalIni);
             }
 
@@ -131,22 +137,17 @@ public partial class MainWindow : Window
         StatusText.Text = message;
     }
 
-    private static void ValidateFiles()
+    private void ValidateFiles()
     {
-        string exePath =
-            Path.Combine(
-                GameDirectory,
-                "b1_benchmark.exe");
-
-        if (!File.Exists(exePath))
+        if (!File.Exists(_config.BenchmarkExePath))
             throw new FileNotFoundException(
                 "Не найден benchmark.",
-                exePath);
+                _config.BenchmarkExePath);
 
-        if (!File.Exists(IniPath))
+        if (!File.Exists(_config.IniPath))
             throw new FileNotFoundException(
                 "Не найден GameUserSettings.ini.",
-                IniPath);
+                _config.IniPath);
     }
 
     private static void SaveBackup(string ini)

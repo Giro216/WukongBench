@@ -59,7 +59,7 @@ GPU Frame Time: 17.8 ms
 
 ## Используемая конфигурация
 
-Программа рассчитана на локальную установку Benchmark Tool:
+Программа рассчитана на локальную установку Benchmark Tool, а первоначальные данные вручную записываются в `appsettings.json`
 
 ```text
 D:\SteamLibrary\steamapps\common\Black Myth Wukong Benchmark Tool
