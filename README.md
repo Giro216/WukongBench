@@ -79,4 +79,4 @@ b1\Saved\Config\Windows\GameUserSettings.ini
 
 # Результаты
 
-
+![alt text](img/image.png)
