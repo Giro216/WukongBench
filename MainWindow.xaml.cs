@@ -37,10 +37,7 @@ public partial class MainWindow : Window
             ?? throw new InvalidOperationException(
                 "Не удалось загрузить appsettings.json.");
 
-        _benchmarkService = new BenchmarkService(
-            _config.GameDirectory,
-            _config.IniPath,
-            _config.HistoryDirectory);
+        _benchmarkService = new BenchmarkService(_config);
 
         _reportService = new ReportService();
     }

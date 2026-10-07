@@ -2,31 +2,19 @@ using System.Diagnostics;
 using System.IO;
 using WukongBench.model;
 using WukongBench.util;
+using WukongBench.config;
 
 namespace WukongBench.service;
 
 public class BenchmarkService
 {
-    private readonly string _gameDirectory;
-    private readonly string _exePath;
-    private readonly string _iniPath;
-    private readonly string _historyDirectory;
-
+    private readonly AppConfig _config;
     private readonly IniService _iniService;
     private readonly BenchmarkParser _parser;
 
-    public BenchmarkService(
-        string gameDirectory,
-        string iniPath,
-        string historyDirectory)
+    public BenchmarkService(AppConfig config)
     {
-        _gameDirectory = gameDirectory;
-        _exePath = Path.Combine(
-            gameDirectory,
-            "b1_benchmark.exe");
-
-        _iniPath = iniPath;
-        _historyDirectory = historyDirectory;
+        _config = config;
 
         _iniService = new IniService();
         _parser = new BenchmarkParser();
@@ -39,10 +27,10 @@ public class BenchmarkService
         CancellationToken cancellationToken,
         Action<string>? statusCallback = null)
     {
-        Directory.CreateDirectory(_historyDirectory);
+        Directory.CreateDirectory(_config.HistoryDirectory);
 
         var oldFiles = new HashSet<string>(
-            Directory.GetFiles(_historyDirectory));
+            Directory.GetFiles(_config.HistoryDirectory));
 
         statusCallback?.Invoke(
             $"{testName}: применяю настройки");
@@ -53,13 +41,13 @@ public class BenchmarkService
                 settings);
 
         File.WriteAllText(
-            _iniPath,
+            _config.IniPath,
             configuredIni);
 
         Process.Start(new ProcessStartInfo
         {
-            FileName = _exePath,
-            WorkingDirectory = _gameDirectory,
+            FileName = _config.SteamExecutable,
+            Arguments = $"-applaunch {_config.SteamAppId}",
             UseShellExecute = true
         });
 
@@ -139,7 +127,7 @@ public class BenchmarkService
         HashSet<string> oldFiles)
     {
         foreach (string file in
-                 Directory.GetFiles(_historyDirectory))
+                 Directory.GetFiles(_config.HistoryDirectory))
         {
             if (!oldFiles.Contains(file))
                 return file;

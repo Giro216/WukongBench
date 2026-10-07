@@ -5,6 +5,8 @@ namespace WukongBench.config;
 public class AppConfig
 {
     public string GameDirectory { get; set; } = "";
+    public string SteamExecutable { get; set; } = "";
+    public int SteamAppId { get; set; }
 
     public string IniPath =>
         Path.Combine(
